@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import './App.css';
 import app from "./firebase.init";
 import Button from 'react-bootstrap/Button';
@@ -9,12 +9,15 @@ const auth = getAuth(app);
 
 function App() {
   const [validated, setValidated] = useState(false);
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [registered, setRegistered] = useState(false)
   
-
+  const handelName = event =>{
+    setName(event.target.value)
+  }
   const handelEmail = (event) =>{
     setEmail(event.target.value)
   }
@@ -24,10 +27,13 @@ function App() {
 
   const handelRegister= event =>{
     setRegistered(event.target.checked);
+    console.log('checked');
   }
 
+  
+
   const handelFormSubmit = event =>{
-    
+    console.log('register checked')
     const form = event.currentTarget;
 
     event.preventDefault();
@@ -61,6 +67,7 @@ function App() {
     setPassword('');
       console.log(user);
       verifyEmail();
+      setUserName();
     })
     .catch(error =>{
       setError(error.message);
@@ -69,10 +76,23 @@ function App() {
     }
     event.preventDefault();
   }
+
   const handelForgetPassword = () =>{
     sendPasswordResetEmail(auth, email)
     .then(()=>{
       console.log('send a mail')
+    })
+  }
+
+  const setUserName = () =>{
+    updateProfile(auth.currentUser,{
+      displayName: name
+    })
+    .then(()=>{
+      console.log('update Name')
+    })
+    .catch(()=>{
+      setError(error)
     })
   }
 
@@ -87,6 +107,16 @@ function App() {
       <div className="registation-form w-50 mx-auto mt-3">
         <h3 className="text-primary">{registered ? 'LogIn':'Registration'} Form</h3>
       <Form noValidate validated={validated} onSubmit={handelFormSubmit}>
+      {!registered && <Form.Group className="mb-3" controlId="formBasicEmail">
+        <Form.Label>Your Name</Form.Label>
+        <Form.Control onBlur={handelName} type="text" placeholder="Enter name" required />
+        <Form.Text className="text-muted">
+          <Form.Control.Feedback type="invalid">
+            Please provide a your name.
+          </Form.Control.Feedback>
+        </Form.Text>
+      </Form.Group>}
+
       <Form.Group className="mb-3" controlId="formBasicEmail">
         <Form.Label>Email address</Form.Label>
         <Form.Control onBlur={handelEmail} type="email" placeholder="Enter email" required />
